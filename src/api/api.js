@@ -1,5 +1,5 @@
 export const fetchProducts = async (page = 1) => {
-  const response = await fetch(`https://next-ecommerce-api.vercel.app/products?page=${page}&limit=20`);
+  const response = await fetch(`https://next-ecommerce-api.vercel.app/products?skip=${(page-1)*20}&limit=20`);
   if (!response.ok) {
     throw new Error('Failed to fetch products');
   }
