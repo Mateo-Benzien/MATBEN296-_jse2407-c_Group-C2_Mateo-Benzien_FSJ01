@@ -6,58 +6,71 @@ import ProductList from '../components/ProductList';
 export default function ProductListing({ initialProducts, initialPage }) {
   const [products, setProducts] = useState(initialProducts || []);
   const [page, setPage] = useState(initialPage || 1);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [category, setCategory] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
-    if (page !== initialPage) {
-      const loadProducts = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-          const productData = await fetchProducts(page);
-          setProducts(productData);
-        } catch (err) {
-          setError("Failed to load products");
-        } finally {
-          setLoading(false);
-        }
-      };
-      loadProducts();
-    }
-  }, [page]);
+    const loadProducts = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const productData = await fetchProducts(page, searchQuery, category);
+        setProducts(productData);
+      } catch (err) {
+        setError("Failed to load products");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadProducts();
+  }, [page, searchQuery, category]);
 
-  const handleNextPage = () => {
-    const nextPage = page + 1;
-    setPage(nextPage);
-    router.push(`/?page=${nextPage}`, undefined, { shallow: true });
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setPage(1);
   };
 
-  const handlePrevPage = () => {
-    const prevPage = Math.max(page - 1, 1);
-    setPage(prevPage);
-    router.push(`/?page=${prevPage}`, undefined, { shallow: true });
+  const handleCategoryChange = (e) => {
+    setCategory(e.target.value);
+    setPage(1);
   };
 
   return (
     <div className="container">
       <h1 className="title">Our Products</h1>
+      <form onSubmit={handleSearch} className="search-form">
+        <input 
+          type="text" 
+          value={searchQuery} 
+          onChange={(e) => setSearchQuery(e.target.value)} 
+          placeholder="Search by title" 
+          className="search-input" 
+        />
+        <select value={category} onChange={handleCategoryChange} className="category-select">
+          <option value="">All Categories</option>
+          <option value="electronics">Electronics</option>
+          <option value="furniture">Furniture</option>
+          {/* Add more categories as needed */}
+        </select>
+        <button type="submit" className="search-button">Search</button>
+      </form>
+
       {error ? (
         <div className="error-message">{error}</div>
       ) : loading ? (
         <div className="loading-message">Loading...</div>
       ) : (
         <>
-          <div className="product-grid">
-            <ProductList products={products} />
-          </div>
+          <ProductList products={products} />
           <div className="pagination">
-            <button className="btn" onClick={handlePrevPage} disabled={page === 1}>
+            <button className="btn" onClick={() => setPage(page - 1)} disabled={page === 1}>
               &larr; Previous
             </button>
             <span className="page-number">Page {page}</span>
-            <button className="btn" onClick={handleNextPage}>
+            <button className="btn" onClick={() => setPage(page + 1)}>
               Next &rarr;
             </button>
           </div>
@@ -76,61 +89,41 @@ export default function ProductListing({ initialProducts, initialPage }) {
           font-weight: bold;
           color: #333;
         }
-        .product-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 30px;
-        }
-        .pagination {
-          margin-top: 30px;
+        .search-form {
           display: flex;
           justify-content: center;
-          align-items: center;
+          margin-bottom: 20px;
         }
-        .btn {
+        .search-input, .category-select {
+          padding: 10px;
+          margin-right: 10px;
+          font-size: 1rem;
+        }
+        .search-button {
           background-color: #0070f3;
           color: white;
           border: none;
           padding: 10px 20px;
           font-size: 1rem;
           cursor: pointer;
-          margin: 0 10px;
-          transition: background-color 0.3s ease;
+        }
+        .search-button:hover {
+          background-color: #005bb5;
+        }
+        .pagination {
+          display: flex;
+          justify-content: center;
+          margin-top: 20px;
+        }
+        .btn {
+          padding: 10px 20px;
+          background-color: #0070f3;
+          color: white;
+          border: none;
+          cursor: pointer;
         }
         .btn:disabled {
           background-color: #ccc;
-          cursor: not-allowed;
-        }
-        .btn:hover:not(:disabled) {
-          background-color: #005bb5;
-        }
-        .page-number {
-          font-size: 1.2rem;
-          font-weight: bold;
-        }
-        .loading-message,
-        .error-message {
-          text-align: center;
-          margin-top: 50px;
-          font-size: 1.5rem;
-        }
-
-        @media (max-width: 1200px) {
-          .product-grid {
-            grid-template-columns: repeat(3, 1fr);
-          }
-        }
-
-        @media (max-width: 900px) {
-          .product-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-        }
-
-        @media (max-width: 600px) {
-          .product-grid {
-            grid-template-columns: 1fr;
-          }
         }
       `}</style>
     </div>
