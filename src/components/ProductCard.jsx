@@ -1,3 +1,4 @@
+// src/components/ProductCard.jsx
 import Link from 'next/link';
 
 const ProductCard = ({ product }) => {
@@ -17,12 +18,10 @@ const ProductCard = ({ product }) => {
           border: 1px solid #e1e1e1;
           border-radius: 10px;
           box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-          padding: 40px; /* Increased padding */
+          padding: 40px;
           text-align: center;
-          cursor: pointer;
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
-          max-width: 320px; /* Set a maximum width for the card */
-          width: 100%; /* Make card take full width of its container */
+          max-width: 320px;
+          width: 100%;
         }
 
         .product-card:hover {
@@ -32,7 +31,7 @@ const ProductCard = ({ product }) => {
 
         .product-image-container {
           width: 100%;
-          height: 300px; /* Adjusted height for wider cards */
+          height: 300px;
           overflow: hidden;
           border-radius: 8px;
           margin-bottom: 15px;
@@ -41,7 +40,7 @@ const ProductCard = ({ product }) => {
         .product-image-container img {
           width: 100%;
           height: 100%;
-          object-fit: contain; /* Fit the whole image */
+          object-fit: contain;
           transition: transform 0.3s ease;
         }
 
@@ -50,7 +49,7 @@ const ProductCard = ({ product }) => {
         }
 
         h2 {
-          font-size: 1.5rem; /* Slightly larger font size */
+          font-size: 1.5rem;
           font-weight: bold;
           margin: 10px 0;
           color: #333;
@@ -66,25 +65,6 @@ const ProductCard = ({ product }) => {
         .product-category {
           font-size: 0.9rem;
           color: #7f8c8d;
-        }
-
-        @media (max-width: 768px) {
-          .product-card {
-            padding: 20px;
-            width: 100%;
-          }
-
-          .product-image-container {
-            height: 200px;
-          }
-
-          h2 {
-            font-size: 1.2rem;
-          }
-
-          .product-price {
-            font-size: 1.1rem;
-          }
         }
       `}</style>
     </div>

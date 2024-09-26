@@ -1,13 +1,16 @@
-export const fetchProducts = async (page = 1, searchQuery = '', category = '') => {
+// src/api/api.jsx
+export const fetchProducts = async (page = 1, searchQuery = '', category = '', sortBy = '', sortOrder = 'asc') => {
   const query = new URLSearchParams({
     skip: (page - 1) * 20,
     limit: 20,
     title: searchQuery,
-    category: category
+    category: category,
+    sortBy: sortBy,
+    sortOrder: sortOrder,
   });
 
   const response = await fetch(`https://next-ecommerce-api.vercel.app/products?${query}`);
-  
+
   if (!response.ok) {
     throw new Error('Failed to fetch products');
   }

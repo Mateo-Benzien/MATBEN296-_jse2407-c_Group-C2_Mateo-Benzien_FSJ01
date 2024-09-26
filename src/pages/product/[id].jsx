@@ -1,4 +1,4 @@
-import { fetchProductById } from '../../api/api';
+import { fetchProductById } from '../api/api';
 
 const ProductDetail = ({ product, error }) => {
   if (error) return <div className="error">{error}</div>;
