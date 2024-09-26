@@ -1,5 +1,5 @@
-export const fetchProducts = async (page = 1, query = '', category = '') => {
-  const response = await fetch(`https://next-ecommerce-api.vercel.app/products?skip=${(page-1)*20}&limit=20&search=${query}&category=${category}`);
+export const fetchProducts = async (page = 1, query = '', category = '', sort = '') => {
+  const response = await fetch(`https://next-ecommerce-api.vercel.app/products?skip=${(page-1)*20}&limit=20&search=${query}&category=${category}&sort=${sort}`);
   if (!response.ok) {
     throw new Error('Failed to fetch products');
   }
@@ -17,7 +17,7 @@ export const fetchProductById = async (id) => {
 };
 
 export const fetchCategories = async () => {
-  const response = await fetch('https://next-ecommerce-api.vercel.app/categories');
+  const response = await fetch(`https://next-ecommerce-api.vercel.app/categories`);
   if (!response.ok) {
     throw new Error('Failed to fetch categories');
   }

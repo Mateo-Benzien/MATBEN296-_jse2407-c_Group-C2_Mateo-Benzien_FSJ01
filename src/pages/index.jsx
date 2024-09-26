@@ -11,6 +11,7 @@ export default function ProductListing({ initialProducts, initialCategories, ini
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortOption, setSortOption] = useState('asc'); // New state for sort option
   const router = useRouter();
 
   useEffect(() => {
@@ -18,7 +19,7 @@ export default function ProductListing({ initialProducts, initialCategories, ini
       setLoading(true);
       setError(null);
       try {
-        const productData = await fetchProducts(page, searchQuery, selectedCategory);
+        const productData = await fetchProducts(page, searchQuery, selectedCategory, sortOption); // Pass sort option
         setProducts(productData);
       } catch (err) {
         setError("Failed to load products");
@@ -27,30 +28,36 @@ export default function ProductListing({ initialProducts, initialCategories, ini
       }
     };
     loadProducts();
-  }, [page, searchQuery, selectedCategory]);
+  }, [page, searchQuery, selectedCategory, sortOption]); // Add sortOption to the dependency array
 
   const handleSearch = (event) => {
     setSearchQuery(event.target.value);
     setPage(1); // Reset to first page on search
-    router.push(`/?page=1&search=${event.target.value}`, undefined, { shallow: true });
+    router.push(`/?page=1&search=${event.target.value}&category=${selectedCategory}&sort=${sortOption}`, undefined, { shallow: true });
   };
 
   const handleCategoryChange = (event) => {
     setSelectedCategory(event.target.value);
     setPage(1); // Reset to first page on category change
-    router.push(`/?page=1&search=${searchQuery}&category=${event.target.value}`, undefined, { shallow: true });
+    router.push(`/?page=1&search=${searchQuery}&category=${event.target.value}&sort=${sortOption}`, undefined, { shallow: true });
+  };
+
+  const handleSortChange = (event) => {
+    setSortOption(event.target.value);
+    setPage(1); // Reset to first page on sort change
+    router.push(`/?page=1&search=${searchQuery}&category=${selectedCategory}&sort=${event.target.value}`, undefined, { shallow: true });
   };
 
   const handleNextPage = () => {
     const nextPage = page + 1;
     setPage(nextPage);
-    router.push(`/?page=${nextPage}&search=${searchQuery}&category=${selectedCategory}`, undefined, { shallow: true });
+    router.push(`/?page=${nextPage}&search=${searchQuery}&category=${selectedCategory}&sort=${sortOption}`, undefined, { shallow: true });
   };
 
   const handlePrevPage = () => {
     const prevPage = Math.max(page - 1, 1);
     setPage(prevPage);
-    router.push(`/?page=${prevPage}&search=${searchQuery}&category=${selectedCategory}`, undefined, { shallow: true });
+    router.push(`/?page=${prevPage}&search=${searchQuery}&category=${selectedCategory}&sort=${sortOption}`, undefined, { shallow: true });
   };
 
   return (
@@ -85,6 +92,10 @@ export default function ProductListing({ initialProducts, initialCategories, ini
           <option key={category.id} value={category.name}>{category.name}</option>
         ))}
       </select>
+      <select value={sortOption} onChange={handleSortChange} className="sort-select">
+        <option value="asc">Price: Low to High</option>
+        <option value="desc">Price: High to Low</option>
+      </select>
       {error ? (
         <div className="error-message">{error}</div>
       ) : loading ? (
@@ -118,15 +129,9 @@ export default function ProductListing({ initialProducts, initialCategories, ini
           font-weight: bold;
           color: #333;
         }
-        .search-input {
-          width: 100%;
-          padding: 10px;
-          margin-bottom: 20px;
-          font-size: 1rem;
-          border: 1px solid #ccc;
-          border-radius: 5px;
-        }
-        .category-select {
+        .search-input,
+        .category-select,
+        .sort-select {
           width: 100%;
           padding: 10px;
           margin-bottom: 20px;
@@ -200,8 +205,9 @@ export async function getServerSideProps(context) {
     const page = parseInt(context.query.page) || 1;
     const searchQuery = context.query.search || '';
     const selectedCategory = context.query.category || '';
+    const sortOption = context.query.sort || 'asc'; // Default sort to ascending
     
-    const products = await fetchProducts(page, searchQuery, selectedCategory);
+    const products = await fetchProducts(page, searchQuery, selectedCategory, sortOption);
     const categories = await fetchCategories(); // Fetch categories for the filter
 
     return { props: { initialProducts: products, initialCategories: categories, initialPage: page } };
