@@ -15,7 +15,6 @@ export default function ProductListing({ initialProducts, initialPage }) {
   const [error, setError] = useState(null);
   const router = useRouter();
 
-  // Parse URL to apply search, filter, sort
   useEffect(() => {
     const { search = '', category = '', sortBy = 'price', sortOrder = 'asc', page = 1 } = router.query;
     setSearchQuery(search);
@@ -99,7 +98,7 @@ export default function ProductListing({ initialProducts, initialPage }) {
           <option value="smartphones">smartphones</option>
           <option value="furniture">Furniture</option>
         </select>
-        <select value={sortBy} onChange={handleSortChange}>
+        <select value={sortBy} onChange={handleSortChange} className="sort-select">
           <option value="price">Price</option>
           <option value="title">Title</option>
         </select>
@@ -128,6 +127,84 @@ export default function ProductListing({ initialProducts, initialPage }) {
           </div>
         </>
       )}
+      <style jsx>{`
+        .container {
+          max-width: 1200px;
+          margin: auto;
+          padding: 20px;
+        }
+
+        .title {
+          text-align: center;
+          margin-bottom: 20px;
+          color: #333;
+        }
+
+        .search-form {
+          display: flex;
+          justify-content: center;
+          margin-bottom: 20px;
+          gap: 10px;
+        }
+
+        .search-input {
+          padding: 10px;
+          border-radius: 5px;
+          border: 1px solid #ccc;
+          flex: 1;
+        }
+
+        .category-select,
+        .sort-select {
+          padding: 10px;
+          border-radius: 5px;
+          border: 1px solid #ccc;
+        }
+
+        .search-button {
+          padding: 10px 20px;
+          background-color: #0070f3;
+          color: white;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+        }
+
+        .search-button:hover {
+          background-color: #005bb5;
+        }
+
+        .pagination {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          margin-top: 20px;
+        }
+
+        .btn {
+          padding: 10px 15px;
+          background-color: #0070f3;
+          color: white;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          margin: 0 10px;
+        }
+
+        .btn:disabled {
+          background-color: #ccc;
+          cursor: not-allowed;
+        }
+
+        .error-message {
+          color: #e74c3c;
+          text-align: center;
+        }
+
+        .loading-message {
+          text-align: center;
+        }
+      `}</style>
     </div>
   );
 }

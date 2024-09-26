@@ -1,7 +1,9 @@
-import { fetchProductById } from '../api/api';
+// src/pages/product/[id].jsx
+import { fetchProductById } from '../../api/api'; // Corrected import path
 
 const ProductDetail = ({ product, error }) => {
   if (error) return <div className="error">{error}</div>;
+  if (!product) return <div className="error">Product not found</div>;
 
   return (
     <div className="product-detail-container">
