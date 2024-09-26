@@ -110,14 +110,15 @@ const ProductDetail = ({ product, error }) => {
           margin-top: 10px;
         }
 
+        .error {
+          color: #e74c3c;
+          font-weight: bold;
+        }
+
         @media (max-width: 768px) {
           .product-detail-container {
             flex-direction: column;
             align-items: center;
-          }
-
-          .product-info {
-            max-width: 100%;
           }
         }
       `}</style>
@@ -126,8 +127,9 @@ const ProductDetail = ({ product, error }) => {
 };
 
 export async function getServerSideProps(context) {
+  const { id } = context.params;
   try {
-    const product = await fetchProductById(context.params.id);
+    const product = await fetchProductById(id);
     return { props: { product } };
   } catch (error) {
     return { props: { error: 'Failed to load product' } };

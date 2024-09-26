@@ -14,6 +14,7 @@ export default function ProductListing({ initialProducts, initialCategories, ini
   const [sortOption, setSortOption] = useState('asc'); // Default sort option
   const router = useRouter();
 
+  // Fetch products based on filters, sorting, and pagination
   useEffect(() => {
     const loadProducts = async () => {
       setLoading(true);
@@ -30,8 +31,8 @@ export default function ProductListing({ initialProducts, initialCategories, ini
     loadProducts();
   }, [page, searchQuery, selectedCategory, sortOption]); // Fetch products when any of these change
 
+  // Update URL query parameters based on current state
   useEffect(() => {
-    // Update URL query parameters based on current state
     const query = { page, search: searchQuery, category: selectedCategory, sort: sortOption };
     router.push({ pathname: '/', query }, undefined, { shallow: true });
   }, [page, searchQuery, selectedCategory, sortOption]); // Update URL when these values change
@@ -111,7 +112,7 @@ export default function ProductListing({ initialProducts, initialCategories, ini
               &larr; Previous
             </button>
             <span className="page-number">Page {page}</span>
-            <button className="btn" onClick={handleNextPage}>
+            <button className="btn" onClick={handleNextPage} disabled={products.length < 20}>
               Next &rarr;
             </button>
           </div>
@@ -201,6 +202,7 @@ export default function ProductListing({ initialProducts, initialCategories, ini
   );
 }
 
+// Fetch products for the initial page load
 export async function getServerSideProps(context) {
   try {
     const page = parseInt(context.query.page) || 1;
