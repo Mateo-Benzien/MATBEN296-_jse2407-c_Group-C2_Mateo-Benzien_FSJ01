@@ -1,4 +1,3 @@
-// src/components/ProductList.jsx
 import ProductCard from './ProductCard';
 
 const ProductList = ({ products }) => {
