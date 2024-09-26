@@ -11,7 +11,7 @@ export default function ProductListing({ initialProducts, initialCategories, ini
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortOption, setSortOption] = useState('asc'); // New state for sort option
+  const [sortOption, setSortOption] = useState('asc'); // Default sort option
   const router = useRouter();
 
   useEffect(() => {
@@ -19,7 +19,7 @@ export default function ProductListing({ initialProducts, initialCategories, ini
       setLoading(true);
       setError(null);
       try {
-        const productData = await fetchProducts(page, searchQuery, selectedCategory, sortOption); // Pass sort option
+        const productData = await fetchProducts(page, searchQuery, selectedCategory, sortOption);
         setProducts(productData);
       } catch (err) {
         setError("Failed to load products");
@@ -28,36 +28,37 @@ export default function ProductListing({ initialProducts, initialCategories, ini
       }
     };
     loadProducts();
-  }, [page, searchQuery, selectedCategory, sortOption]); // Add sortOption to the dependency array
+  }, [page, searchQuery, selectedCategory, sortOption]); // Fetch products when any of these change
+
+  useEffect(() => {
+    // Update URL query parameters based on current state
+    const query = { page, search: searchQuery, category: selectedCategory, sort: sortOption };
+    router.push({ pathname: '/', query }, undefined, { shallow: true });
+  }, [page, searchQuery, selectedCategory, sortOption]); // Update URL when these values change
 
   const handleSearch = (event) => {
     setSearchQuery(event.target.value);
     setPage(1); // Reset to first page on search
-    router.push(`/?page=1&search=${event.target.value}&category=${selectedCategory}&sort=${sortOption}`, undefined, { shallow: true });
   };
 
   const handleCategoryChange = (event) => {
     setSelectedCategory(event.target.value);
     setPage(1); // Reset to first page on category change
-    router.push(`/?page=1&search=${searchQuery}&category=${event.target.value}&sort=${sortOption}`, undefined, { shallow: true });
   };
 
   const handleSortChange = (event) => {
     setSortOption(event.target.value);
     setPage(1); // Reset to first page on sort change
-    router.push(`/?page=1&search=${searchQuery}&category=${selectedCategory}&sort=${event.target.value}`, undefined, { shallow: true });
   };
 
   const handleNextPage = () => {
     const nextPage = page + 1;
     setPage(nextPage);
-    router.push(`/?page=${nextPage}&search=${searchQuery}&category=${selectedCategory}&sort=${sortOption}`, undefined, { shallow: true });
   };
 
   const handlePrevPage = () => {
     const prevPage = Math.max(page - 1, 1);
     setPage(prevPage);
-    router.push(`/?page=${prevPage}&search=${searchQuery}&category=${selectedCategory}&sort=${sortOption}`, undefined, { shallow: true });
   };
 
   return (
