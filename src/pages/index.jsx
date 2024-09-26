@@ -20,7 +20,12 @@ export default function ProductListing({ initialProducts, initialCategories, ini
       setLoading(true);
       setError(null);
       try {
-        const productData = await fetchProducts(page, searchQuery, selectedCategory, sortOption);
+        const productData = await fetchProducts({
+          page,
+          searchQuery,
+          category: selectedCategory,
+          sortOption,
+        });
         setProducts(productData);
       } catch (err) {
         setError("Failed to load products");
@@ -210,7 +215,12 @@ export async function getServerSideProps(context) {
     const selectedCategory = context.query.category || '';
     const sortOption = context.query.sort || 'asc'; // Default sort to ascending
     
-    const products = await fetchProducts(page, searchQuery, selectedCategory, sortOption);
+    const products = await fetchProducts({
+      page,
+      searchQuery,
+      category: selectedCategory,
+      sortOption,
+    });
     const categories = await fetchCategories(); // Fetch categories for the filter
 
     return { props: { initialProducts: products, initialCategories: categories, initialPage: page } };
