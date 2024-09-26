@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { fetchProducts } from '../api/api';
+import { fetchProducts, fetchCategories } from '../api/api';
 import ProductList from '../components/ProductList';
 
-export default function ProductListing({ initialProducts, initialPage }) {
+export default function ProductListing({ initialProducts, initialCategories, initialPage }) {
   const [products, setProducts] = useState(initialProducts || []);
+  const [categories, setCategories] = useState(initialCategories || []);
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [page, setPage] = useState(initialPage || 1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -16,7 +18,7 @@ export default function ProductListing({ initialProducts, initialPage }) {
       setLoading(true);
       setError(null);
       try {
-        const productData = await fetchProducts(page, searchQuery);
+        const productData = await fetchProducts(page, searchQuery, selectedCategory);
         setProducts(productData);
       } catch (err) {
         setError("Failed to load products");
@@ -25,7 +27,7 @@ export default function ProductListing({ initialProducts, initialPage }) {
       }
     };
     loadProducts();
-  }, [page, searchQuery]);
+  }, [page, searchQuery, selectedCategory]);
 
   const handleSearch = (event) => {
     setSearchQuery(event.target.value);
@@ -33,16 +35,22 @@ export default function ProductListing({ initialProducts, initialPage }) {
     router.push(`/?page=1&search=${event.target.value}`, undefined, { shallow: true });
   };
 
+  const handleCategoryChange = (event) => {
+    setSelectedCategory(event.target.value);
+    setPage(1); // Reset to first page on category change
+    router.push(`/?page=1&search=${searchQuery}&category=${event.target.value}`, undefined, { shallow: true });
+  };
+
   const handleNextPage = () => {
     const nextPage = page + 1;
     setPage(nextPage);
-    router.push(`/?page=${nextPage}&search=${searchQuery}`, undefined, { shallow: true });
+    router.push(`/?page=${nextPage}&search=${searchQuery}&category=${selectedCategory}`, undefined, { shallow: true });
   };
 
   const handlePrevPage = () => {
     const prevPage = Math.max(page - 1, 1);
     setPage(prevPage);
-    router.push(`/?page=${prevPage}&search=${searchQuery}`, undefined, { shallow: true });
+    router.push(`/?page=${prevPage}&search=${searchQuery}&category=${selectedCategory}`, undefined, { shallow: true });
   };
 
   return (
@@ -55,6 +63,28 @@ export default function ProductListing({ initialProducts, initialPage }) {
         placeholder="Search for products..." 
         className="search-input" 
       />
+      <select value={selectedCategory} onChange={handleCategoryChange} className="category-select">
+        <option value="">All Categories</option>
+        <option value="kitchen-accessories">kitchen-accessories</option>
+          <option value="groceries">groceries</option>
+          <option value="sports-accessories">sports-accessories</option>
+          <option value="beauty">beauty</option>
+          <option value="skin-care">skin-care</option>
+          <option value="mobile-accessories">mobile-accessories</option>
+          <option value="home-decoration">home-decoration</option>
+          <option value="sunglasses">sunglasses</option>
+          <option value="womens-shoes">womens-shoes</option>
+          <option value="mens-shirts">mens-shirts</option>
+          <option value="tops">tops</option>
+          <option value="womens-jewellery">womens-jewellery</option>
+          <option value="womens-bags">womens-bags</option>
+          <option value="fragrances">fragrances</option>
+          <option value="smartphones">smartphones</option>
+          <option value="furniture">Furniture</option>
+        {categories.map((category) => (
+          <option key={category.id} value={category.name}>{category.name}</option>
+        ))}
+      </select>
       {error ? (
         <div className="error-message">{error}</div>
       ) : loading ? (
@@ -89,6 +119,14 @@ export default function ProductListing({ initialProducts, initialPage }) {
           color: #333;
         }
         .search-input {
+          width: 100%;
+          padding: 10px;
+          margin-bottom: 20px;
+          font-size: 1rem;
+          border: 1px solid #ccc;
+          border-radius: 5px;
+        }
+        .category-select {
           width: 100%;
           padding: 10px;
           margin-bottom: 20px;
@@ -161,8 +199,12 @@ export async function getServerSideProps(context) {
   try {
     const page = parseInt(context.query.page) || 1;
     const searchQuery = context.query.search || '';
-    const products = await fetchProducts(page, searchQuery);
-    return { props: { initialProducts: products, initialPage: page } };
+    const selectedCategory = context.query.category || '';
+    
+    const products = await fetchProducts(page, searchQuery, selectedCategory);
+    const categories = await fetchCategories(); // Fetch categories for the filter
+
+    return { props: { initialProducts: products, initialCategories: categories, initialPage: page } };
   } catch (error) {
     return { props: { error: "Failed to load products" } };
   }
