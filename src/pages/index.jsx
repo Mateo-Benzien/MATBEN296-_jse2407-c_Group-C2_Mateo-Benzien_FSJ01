@@ -37,6 +37,7 @@ export default function ProductListing({ initialProducts, initialCategories }) {
     loadProducts();
   }, [currentPage, searchQuery, selectedCategory, sortOption]);
 
+  // Update query parameters on state changes
   useEffect(() => {
     const query = { page: currentPage, search: searchQuery, category: selectedCategory, sort: sortOption };
     router.push({ pathname: '/', query }, undefined, { shallow: true });
