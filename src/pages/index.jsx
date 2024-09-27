@@ -3,25 +3,26 @@ import { useRouter } from 'next/router';
 import { fetchProducts, fetchCategories } from '../api/api';
 import ProductList from '../components/ProductList';
 
-export default function ProductListing({ initialProducts, initialCategories, initialPage }) {
+export default function ProductListing({ initialProducts, initialCategories }) {
+  const router = useRouter();
+  const { page = 1, search = '', category = '', sort = 'asc' } = router.query;
+
   const [products, setProducts] = useState(initialProducts || []);
   const [categories, setCategories] = useState(initialCategories || []);
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [page, setPage] = useState(initialPage || 1);
+  const [selectedCategory, setSelectedCategory] = useState(category);
+  const [currentPage, setCurrentPage] = useState(Number(page));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortOption, setSortOption] = useState('asc'); // Default sort option
-  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState(search);
+  const [sortOption, setSortOption] = useState(sort);
 
-  // Fetch products based on filters, sorting, and pagination
   useEffect(() => {
     const loadProducts = async () => {
       setLoading(true);
       setError(null);
       try {
         const productData = await fetchProducts({
-          page,
+          page: currentPage,
           searchQuery,
           category: selectedCategory,
           sortOption,
@@ -34,37 +35,36 @@ export default function ProductListing({ initialProducts, initialCategories, ini
       }
     };
     loadProducts();
-  }, [page, searchQuery, selectedCategory, sortOption]); // Fetch products when any of these change
+  }, [currentPage, searchQuery, selectedCategory, sortOption]);
 
-  // Update URL query parameters based on current state
   useEffect(() => {
-    const query = { page, search: searchQuery, category: selectedCategory, sort: sortOption };
+    const query = { page: currentPage, search: searchQuery, category: selectedCategory, sort: sortOption };
     router.push({ pathname: '/', query }, undefined, { shallow: true });
-  }, [page, searchQuery, selectedCategory, sortOption]); // Update URL when these values change
+  }, [currentPage, searchQuery, selectedCategory, sortOption]);
 
   const handleSearch = (event) => {
     setSearchQuery(event.target.value);
-    setPage(1); // Reset to first page on search
+    setCurrentPage(1);
   };
 
   const handleCategoryChange = (event) => {
     setSelectedCategory(event.target.value);
-    setPage(1); // Reset to first page on category change
+    setCurrentPage(1);
   };
 
   const handleSortChange = (event) => {
     setSortOption(event.target.value);
-    setPage(1); // Reset to first page on sort change
+    setCurrentPage(1);
   };
 
   const handleNextPage = () => {
-    const nextPage = page + 1;
-    setPage(nextPage);
+    const nextPage = currentPage + 1;
+    setCurrentPage(nextPage);
   };
 
   const handlePrevPage = () => {
-    const prevPage = Math.max(page - 1, 1);
-    setPage(prevPage);
+    const prevPage = Math.max(currentPage - 1, 1);
+    setCurrentPage(prevPage);
   };
 
   return (
@@ -109,14 +109,12 @@ export default function ProductListing({ initialProducts, initialCategories, ini
         <div className="loading-message">Loading...</div>
       ) : (
         <>
-          <div className="product-grid">
-            <ProductList products={products} />
-          </div>
+          <ProductList products={products} />
           <div className="pagination">
-            <button className="btn" onClick={handlePrevPage} disabled={page === 1}>
+            <button className="btn" onClick={handlePrevPage} disabled={currentPage === 1}>
               &larr; Previous
             </button>
-            <span className="page-number">Page {page}</span>
+            <span className="page-number">Page {currentPage}</span>
             <button className="btn" onClick={handleNextPage} disabled={products.length < 20}>
               Next &rarr;
             </button>
@@ -125,81 +123,54 @@ export default function ProductListing({ initialProducts, initialCategories, ini
       )}
       <style jsx>{`
         .container {
-          max-width: 1200px;
-          margin: 0 auto;
           padding: 20px;
+          max-width: 1200px;
+          margin: auto;
         }
+
         .title {
-          text-align: center;
-          margin-bottom: 40px;
-          font-size: 2.5rem;
-          font-weight: bold;
+          font-size: 2rem;
+          margin-bottom: 20px;
           color: #333;
         }
+
         .search-input,
         .category-select,
         .sort-select {
-          width: 100%;
+          margin-right: 10px;
           padding: 10px;
-          margin-bottom: 20px;
-          font-size: 1rem;
-          border: 1px solid #ccc;
-          border-radius: 5px;
+          border-radius: 4px;
+          border: 1px solid #e1e1e1;
         }
-        .product-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 30px;
-        }
+
         .pagination {
-          margin-top: 30px;
           display: flex;
-          justify-content: center;
+          justify-content: space-between;
           align-items: center;
+          margin-top: 20px;
         }
+
         .btn {
+          padding: 10px 20px;
           background-color: #0070f3;
           color: white;
           border: none;
-          padding: 10px 20px;
-          font-size: 1rem;
+          border-radius: 4px;
           cursor: pointer;
-          margin: 0 10px;
-          transition: background-color 0.3s ease;
         }
+
         .btn:disabled {
           background-color: #ccc;
           cursor: not-allowed;
         }
-        .btn:hover:not(:disabled) {
-          background-color: #005bb5;
-        }
-        .page-number {
-          font-size: 1.2rem;
-          font-weight: bold;
-        }
-        .loading-message,
-        .error-message {
-          text-align: center;
-          margin-top: 50px;
-          font-size: 1.5rem;
-        }
-
-        @media (max-width: 1200px) {
-          .product-grid {
-            grid-template-columns: repeat(3, 1fr);
-          }
-        }
-
-        @media (max-width: 900px) {
-          .product-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-        }
 
         @media (max-width: 600px) {
-          .product-grid {
-            grid-template-columns: 1fr;
+          .container {
+            padding: 10px;
+          }
+
+          .title {
+            font-size: 1.5rem;
           }
         }
       `}</style>
@@ -207,23 +178,22 @@ export default function ProductListing({ initialProducts, initialCategories, ini
   );
 }
 
-// Fetch products for the initial page load
 export async function getServerSideProps(context) {
   try {
     const page = parseInt(context.query.page) || 1;
     const searchQuery = context.query.search || '';
     const selectedCategory = context.query.category || '';
-    const sortOption = context.query.sort || 'asc'; // Default sort to ascending
-    
+    const sortOption = context.query.sort || 'asc';
+
     const products = await fetchProducts({
       page,
       searchQuery,
       category: selectedCategory,
       sortOption,
     });
-    const categories = await fetchCategories(); // Fetch categories for the filter
+    const categories = await fetchCategories();
 
-    return { props: { initialProducts: products, initialCategories: categories, initialPage: page } };
+    return { props: { initialProducts: products, initialCategories: categories } };
   } catch (error) {
     return { props: { error: "Failed to load products" } };
   }

@@ -128,11 +128,12 @@ const ProductDetail = ({ product, error }) => {
 
 export async function getServerSideProps(context) {
   const { id } = context.params;
+  
   try {
     const product = await fetchProductById(id);
     return { props: { product } };
   } catch (error) {
-    return { props: { error: 'Failed to load product' } };
+    return { props: { error: 'Product not found' } };
   }
 }
 
