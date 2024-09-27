@@ -1,37 +1,78 @@
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import { fetchProductById } from '../../api/api';
+import ReviewList from '../../components/ReviewList';
 
-const ProductDetail = ({ product, error }) => {
-  if (error) return <div className="error">{error}</div>;
+export default function ProductDetail({ initialProduct }) {
+  const router = useRouter();
+  const { id } = router.query;
+
+  const [product, setProduct] = useState(initialProduct || {});
+  const [reviews, setReviews] = useState(product.reviews || []);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [sortOption, setSortOption] = useState('latest');
+
+  // Fetch product details if not provided during SSR
+  useEffect(() => {
+    const loadProduct = async () => {
+      if (!id) return;
+      setLoading(true);
+      setError(null);
+      try {
+        const productData = await fetchProductById(id);
+        setProduct(productData);
+        setReviews(productData.reviews || []);
+      } catch (err) {
+        setError('Failed to load product details or reviews');
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (!initialProduct) {
+      loadProduct();
+    }
+  }, [id, initialProduct]);
+
+  // Sort reviews based on selected option
+  const sortedReviews = [...reviews].sort((a, b) => {
+    const dateA = new Date(a.date);
+    const dateB = new Date(b.date);
+    return sortOption === 'latest' ? dateB - dateA : dateA - dateB;
+  });
+
+  const handleSortChange = (event) => {
+    setSortOption(event.target.value);
+  };
 
   return (
     <div className="product-detail-container">
-      <div className="product-image">
-        <img src={product.images[0]} alt={product.title} />
-      </div>
-      <div className="product-info">
-        <h1>{product.title}</h1>
-        <p className="price">${product.price.toFixed(2)}</p>
-        <p className="category">{product.category}</p>
-        <p className="description">{product.description}</p>
-        {product.tags && <p className="tags">Tags: {product.tags.join(', ')}</p>}
-        <p className="rating">Rating: {product.rating} / 5</p>
-        <p className="stock">{product.stock > 0 ? 'In Stock' : 'Out of Stock'}</p>
+      {error && <div className="error-message">{error}</div>}
+      {loading ? (
+        <div className="loading-message">Loading...</div>
+      ) : (
+        <>
+          <div className="product-image">
+            <img src={product.images[0]} alt={product.title} />
+          </div>
+          <div className="product-info">
+            <h1>{product.title}</h1>
+            <p className="price">${product.price.toFixed(2)}</p>
+            <p className="category">{product.category}</p>
+            <p className="description">{product.description}</p>
+            <p className="stock">{product.stock > 0 ? 'In Stock' : 'Out of Stock'}</p>
 
-        <div className="reviews">
-          <h2>Reviews</h2>
-          {product.reviews.length > 0 ? (
-            product.reviews.map((review) => (
-              <div key={review.id} className="review">
-                <p><strong>{review.name}</strong> ({review.date})</p>
-                <p>Rating: {review.rating}</p>
-                <p>{review.comment}</p>
-              </div>
-            ))
-          ) : (
-            <p>No reviews yet</p>
-          )}
-        </div>
-      </div>
+            <div className="reviews">
+              <h2>Reviews</h2>
+              <select value={sortOption} onChange={handleSortChange} className="sort-select">
+                <option value="latest">Sort by Latest</option>
+                <option value="oldest">Sort by Oldest</option>
+              </select>
+              <ReviewList reviews={sortedReviews} />
+            </div>
+          </div>
+        </>
+      )}
 
       <style jsx>{`
         .product-detail-container {
@@ -83,16 +124,6 @@ const ProductDetail = ({ product, error }) => {
           color: #555;
         }
 
-        .tags {
-          font-size: 1rem;
-          margin: 10px 0;
-        }
-
-        .rating {
-          font-size: 1rem;
-          margin: 10px 0;
-        }
-
         .stock {
           font-size: 1.1rem;
           font-weight: bold;
@@ -104,15 +135,19 @@ const ProductDetail = ({ product, error }) => {
           margin-top: 20px;
         }
 
-        .review {
-          border-top: 1px solid #e1e1e1;
-          padding-top: 10px;
-          margin-top: 10px;
+        .sort-select {
+          margin-bottom: 20px;
+          padding: 10px;
+          border-radius: 4px;
+          border: 1px solid #e1e1e1;
         }
 
-        .error {
-          color: #e74c3c;
-          font-weight: bold;
+        .error-message {
+          color: red;
+        }
+
+        .loading-message {
+          font-size: 1.5rem;
         }
 
         @media (max-width: 768px) {
@@ -124,17 +159,14 @@ const ProductDetail = ({ product, error }) => {
       `}</style>
     </div>
   );
-};
+}
 
 export async function getServerSideProps(context) {
   const { id } = context.params;
-  
   try {
     const product = await fetchProductById(id);
-    return { props: { product } };
+    return { props: { initialProduct: product } };
   } catch (error) {
-    return { props: { error: 'Product not found' } };
+    return { props: { error: 'Failed to load product details' } };
   }
 }
-
-export default ProductDetail;
