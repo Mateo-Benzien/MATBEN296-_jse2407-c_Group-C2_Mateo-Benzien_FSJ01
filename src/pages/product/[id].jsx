@@ -171,7 +171,7 @@ export default function ProductDetail({ initialProduct }) {
     </div>
   );
 }
-
+ 
 export async function getServerSideProps(context) {
   const { id } = context.params;
   try {
