@@ -5,7 +5,7 @@ const ReviewList = ({ reviews }) => {
           reviews.map((review) => (
             <div key={review.id} className="review">
               <p><strong>{review.name}</strong> ({new Date(review.date).toLocaleDateString()})</p>
-              <p>Rating: {review.rating}</p>
+              <p>Rating: {review.rating}/5</p>
               <p>{review.comment}</p>
             </div>
           ))

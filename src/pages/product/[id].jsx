@@ -38,7 +38,16 @@ export default function ProductDetail({ initialProduct }) {
   const sortedReviews = [...reviews].sort((a, b) => {
     const dateA = new Date(a.date);
     const dateB = new Date(b.date);
-    return sortOption === 'latest' ? dateB - dateA : dateA - dateB;
+    
+    if (sortOption === 'latest') {
+      return dateB - dateA;
+    } else if (sortOption === 'oldest') {
+      return dateA - dateB;
+    } else if (sortOption === 'highestRating') {
+      return b.rating - a.rating;
+    } else if (sortOption === 'lowestRating') {
+      return a.rating - b.rating;
+    }
   });
 
   const handleSortChange = (event) => {
@@ -67,6 +76,8 @@ export default function ProductDetail({ initialProduct }) {
               <select value={sortOption} onChange={handleSortChange} className="sort-select">
                 <option value="latest">Sort by Latest</option>
                 <option value="oldest">Sort by Oldest</option>
+                <option value="highestRating">Sort by Highest Rating</option>
+                <option value="lowestRating">Sort by Lowest Rating</option>
               </select>
               <ReviewList reviews={sortedReviews} />
             </div>
