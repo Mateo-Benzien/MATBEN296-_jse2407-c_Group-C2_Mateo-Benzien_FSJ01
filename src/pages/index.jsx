@@ -68,6 +68,15 @@ export default function ProductListing({ initialProducts, initialCategories }) {
     setCurrentPage(prevPage);
   };
 
+  // Reset all filters, sorting, and search
+  const handleReset = () => {
+    setSelectedCategory('');
+    setSearchQuery('');
+    setSortOption('asc');
+    setCurrentPage(1);
+    router.push({ pathname: '/', query: { page: 1, search: '', category: '', sort: 'asc' } }, undefined, { shallow: true });
+  };
+
   return (
     <div className="container">
       <h1 className="title">Our Products</h1>
@@ -79,8 +88,8 @@ export default function ProductListing({ initialProducts, initialCategories }) {
         className="search-input" 
       />
       <select value={selectedCategory} onChange={handleCategoryChange} className="category-select">
-        <option value="">All Categories</option>
-        <option value="kitchen-accessories">kitchen-accessories</option>
+         <option value="">All Categories</option>
+          <option value="kitchen-accessories">kitchen-accessories</option>
           <option value="groceries">groceries</option>
           <option value="sports-accessories">sports-accessories</option>
           <option value="beauty">beauty</option>
@@ -104,6 +113,7 @@ export default function ProductListing({ initialProducts, initialCategories }) {
         <option value="asc">Price: Low to High</option>
         <option value="desc">Price: High to Low</option>
       </select>
+      <button onClick={handleReset} className="reset-button">Reset Filters</button>
       {error ? (
         <div className="error-message">{error}</div>
       ) : loading ? (
@@ -137,11 +147,17 @@ export default function ProductListing({ initialProducts, initialCategories }) {
 
         .search-input,
         .category-select,
-        .sort-select {
+        .sort-select,
+        .reset-button {
           margin-right: 10px;
           padding: 10px;
           border-radius: 4px;
           border: 1px solid #e1e1e1;
+        }
+
+        .reset-button {
+          background-color: #ff4757;
+          color: white;
         }
 
         .pagination {
