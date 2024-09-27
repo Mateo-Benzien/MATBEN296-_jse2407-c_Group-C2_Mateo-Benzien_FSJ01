@@ -30,7 +30,7 @@ This project is an e-commerce product listing web application built with Next.js
 
 2. Navigate to the project directory:
    ```bash
-   cd <project-directory>
+   cd <project-directory> (next-ecommerce_2)
    ```
 
 3. Install dependencies:
